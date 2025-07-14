@@ -1,0 +1,98 @@
+.admin-nav {
+    background: #343a40;
+    min-height: 100vh;
+    padding-top: 20px;
+    transition: all 0.3s;
+}
+.nav-link {
+    color: rgba(255,255,255,.5);
+}
+.nav-link:hover {
+    color: rgba(255,255,255,.75);
+}
+.active {
+    color: white;
+    font-weight: bold;
+}
+.form-section {
+    display: none;
+    margin-top: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 5px;
+}
+
+/* Mobile optimizations */
+@media (max-width: 992px) {
+    .admin-nav {
+        position: fixed;
+        width: 250px;
+        left: -250px;
+        z-index: 1000;
+    }
+    .admin-nav.active {
+        left: 0;
+    }
+    .main-content {
+        padding-left: 0 !important;
+    }
+    .mobile-menu-btn {
+        display: block !important;
+    }
+    .course-card, .menu-link-card {
+        width: 100% !important;
+        margin-bottom: 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .form-section {
+        padding: 15px;
+    }
+    .form-control, .btn {
+        font-size: 14px;
+    }
+    .card-img-top {
+        height: 150px;
+        object-fit: cover;
+    }
+}
+
+.mobile-menu-btn {
+    display: none;
+    position: fixed;
+    left: 10px;
+    top: 10px;
+    z-index: 1100;
+    background: #343a40;
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 20px;
+}
+
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+}
+
+.overlay.active {
+    display: block;
+}
+
+.course-card, .menu-link-card {
+    margin-bottom: 20px;
+}
+
+.btn-action {
+    margin: 2px;
+    min-width: 70px;
+}

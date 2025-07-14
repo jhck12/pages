@@ -1,0 +1,105 @@
+/* header.css */
+.header {
+    background-color: #343a40;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.navbar {
+    padding: 0.5rem 0;
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+    color: white !important;
+}
+
+.nav-link {
+    color: rgba(255, 255, 255, 0.8) !important;
+    padding: 0.5rem 1rem !important;
+    transition: color 0.3s;
+}
+
+.nav-link:hover {
+    color: white !important;
+}
+
+.nav-link.active {
+    color: white !important;
+    font-weight: bold;
+}
+
+.logout-btn {
+    background-color: #dc3545;
+    border: none;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    transition: background-color 0.3s;
+    width: 100%;
+    text-align: center;
+}
+
+.logout-btn:hover {
+    background-color: #c82333;
+}
+
+/* Mobile specific styles */
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        padding-top: 1rem;
+    }
+    
+    .logout-container {
+        padding: 0.5rem 1rem;
+        width: 100%;
+    }
+    
+    .nav-link {
+        padding-left: 0 !important;
+    }
+
+    .logout-btn {
+        width: auto;
+position: unset;
+    }
+
+.mobilebtn {
+display: block !important;
+}
+
+.logout-btn {
+        width: auto;
+display: none;
+    }
+
+    .logout-container {
+        padding: 0.0rem 0rem;
+        width: 100%;
+    }
+
+button#logout-btn {
+    padding: 0px;
+    color: #c94949;
+    background: none !important;
+    border: 0px !important;
+    font-weight: 700;
+    text-decoration: underline;
+}
+
+}
+
+/* Desktop specific styles */
+@media (min-width: 992px) {
+    .logout-container {
+        padding-left: 1rem;
+    }
+    
+    .logout-btn {
+        width: auto;
+
+    }
+}

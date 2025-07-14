@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .admin-nav {
+            background: #343a40;
+            min-height: 100vh;
+            padding-top: 20px;
+            transition: all 0.3s;
+        }
+        .nav-link {
+            color: rgba(255,255,255,.5);
+        }
+        .nav-link:hover {
+            color: rgba(255,255,255,.75);
+        }
+        .active {
+            color: white;
+            font-weight: bold;
+        }
+        .form-section {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 992px) {
+            .admin-nav {
+                position: fixed;
+                width: 250px;
+                left: -250px;
+                z-index: 1000;
+            }
+            .admin-nav.active {
+                left: 0;
+            }
+            .main-content {
+                padding-left: 0 !important;
+            }
+            .mobile-menu-btn {
+                display: block !important;
+            }
+            .course-card, .menu-link-card {
+                width: 100% !important;
+                margin-bottom: 15px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .form-section {
+                padding: 15px;
+            }
+            .form-control, .btn {
+                font-size: 14px;
+            }
+            .card-img-top {
+                height: 150px;
+                object-fit: cover;
+            }
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            left: 10px;
+            top: 10px;
+            z-index: 1100;
+            background: #343a40;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+        }
+        
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        
+        .overlay.active {
+            display: block;
+        }
+        
+        .course-card, .menu-link-card {
+            margin-bottom: 20px;
+        }
+        
+        .btn-action {
+            margin: 2px;
+            min-width: 70px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Button -->
+    <button id="mobile-menu-btn" class="mobile-menu-btn">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Overlay for mobile menu -->
+    <div id="overlay" class="overlay"></div>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 admin-nav" id="sidebar">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" id="courses-tab">
+                            <i class="fas fa-book me-2"></i>Courses
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="menu-tab">
+                            <i class="fas fa-link me-2"></i>Menu Links
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="admins-tab">
+                            <i class="fas fa-users-cog me-2"></i>Admin Users
+                        </a>
+                    </li>
+                    <li class="nav-item mt-4">
+                        <button id="logout-btn" class="btn btn-danger w-100">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-10 py-4 main-content" id="main-content">
+                <!-- Courses Management -->
+                <div id="courses-section">
+                    <h2>Manage Courses</h2>
+                    <button class="btn btn-primary mb-3" id="add-course-btn">
+                        <i class="fas fa-plus me-2"></i>Add New Course
+                    </button>
+                    
+                    <div id="courses-list" class="row"></div>
+                    
+                    <div id="course-form-container" class="form-section">
+                        <h3 id="form-title">Add New Course</h3>
+                        <form id="course-form">
+                            <input type="hidden" id="course-id">
+                            <div class="mb-3">
+                                <label for="course-title" class="form-label">Title</label>
+                                <input type="text" class="form-control" id="course-title" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="youtube-id" class="form-label">YouTube Video ID</label>
+                                <input type="text" class="form-control" id="youtube-id" required>
+                                <small class="text-muted">Just the ID (e.g. "dQw4w9WgXcQ")</small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="course-content" class="form-label">Content</label>
+                                <textarea class="form-control" id="course-content" rows="5"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="course-order" class="form-label">Order</label>
+                                <input type="number" class="form-control" id="course-order" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save</button>
+                            <button type="button" class="btn btn-secondary" id="cancel-course-edit">Cancel</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Menu Links Management -->
+                <div id="menu-section" class="form-section">
+                    <h2>Manage Menu Links</h2>
+                    <button class="btn btn-primary mb-3" id="add-menu-link-btn">
+                        <i class="fas fa-plus me-2"></i>Add New Link
+                    </button>
+                    
+                    <div id="menu-links-list" class="row"></div>
+                    
+                    <div id="menu-link-form-container" class="form-section">
+                        <h3>Add/Edit Menu Link</h3>
+                        <form id="menu-link-form">
+                            <input type="hidden" id="menu-link-id">
+                            <div class="mb-3">
+                                <label for="link-text" class="form-label">Text</label>
+                                <input type="text" class="form-control" id="link-text" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="link-url" class="form-label">URL</label>
+                                <input type="text" class="form-control" id="link-url" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="link-order" class="form-label">Order</label>
+                                <input type="number" class="form-control" id="link-order" required>
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="link-visible" checked>
+                                <label class="form-check-label" for="link-visible">Visible</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save</button>
+                            <button type="button" class="btn btn-secondary" id="cancel-menu-edit">Cancel</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Admin Users Management -->
+                <div id="admins-section" class="form-section">
+                    <h2>Manage Admin Users</h2>
+                    <div class="alert alert-info">
+                        Only root admins can manage other admins
+                    </div>
+                    <div id="admins-list"></div>
+                    
+                    <div class="card mt-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Add New Admin</h5>
+                            <form id="admin-form">
+                                <div class="mb-3">
+                                    <label for="admin-email" class="form-label">User Email</label>
+                                    <input type="email" class="form-control" id="admin-email" required>
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="make-root">
+                                    <label class="form-check-label" for="make-root">Make Root Admin</label>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Add Admin</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-database-compat.js"></script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAR2sGQx5Mxz_TZRfRyecWva346jBYel-8",
+            authDomain: "chatapp-fa81d.firebaseapp.com",
+            databaseURL: "https://chatapp-fa81d-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "chatapp-fa81d",
+            storageBucket: "chatapp-fa81d.firebasestorage.app",
+            messagingSenderId: "308333202130",
+            appId: "1:308333202130:web:b9c4fc84eff5bb065f3b0b"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // Main Admin Panel Class
+        class AdminPanel {
+            constructor() {
+                this.initAuth();
+                this.cacheElements();
+                this.bindEvents();
+                this.checkScreenSize();
+                window.addEventListener('resize', () => this.checkScreenSize());
+            }
+            
+            initAuth() {
+                auth.onAuthStateChanged(user => {
+                    if (!user) {
+                        window.location.href = "login.html";
+                    } else {
+                        this.checkAdminStatus(user.uid);
+                    }
+                });
+            }
+            
+            cacheElements() {
+                this.elements = {
+                    // Sections
+                    coursesSection: document.getElementById('courses-section'),
+                    menuSection: document.getElementById('menu-section'),
+                    adminsSection: document.getElementById('admins-section'),
+                    
+                    // Forms
+                    courseFormContainer: document.getElementById('course-form-container'),
+                    menuLinkFormContainer: document.getElementById('menu-link-form-container'),
+                    
+                    // Lists
+                    coursesList: document.getElementById('courses-list'),
+                    menuLinksList: document.getElementById('menu-links-list'),
+                    adminsList: document.getElementById('admins-list'),
+                    
+                    // Mobile elements
+                    sidebar: document.getElementById('sidebar'),
+                    mobileMenuBtn: document.getElementById('mobile-menu-btn'),
+                    overlay: document.getElementById('overlay'),
+                    mainContent: document.getElementById('main-content'),
+                    
+                    // Tabs
+                    tabs: {
+                        courses: document.getElementById('courses-tab'),
+                        menu: document.getElementById('menu-tab'),
+                        admins: document.getElementById('admins-tab')
+                    }
+                };
+            }
+            
+            bindEvents() {
+                // Navigation tabs
+                this.elements.tabs.courses.addEventListener('click', (e) => this.showSection('courses', e));
+                this.elements.tabs.menu.addEventListener('click', (e) => this.showSection('menu', e));
+                this.elements.tabs.admins.addEventListener('click', (e) => this.showSection('admins', e));
+                
+                // Course management
+                document.getElementById('add-course-btn').addEventListener('click', () => this.showCourseForm());
+                document.getElementById('cancel-course-edit').addEventListener('click', () => this.hideForm('course'));
+                document.getElementById('course-form').addEventListener('submit', (e) => this.saveCourse(e));
+                this.elements.coursesList.addEventListener('click', (e) => this.handleCourseActions(e));
+                
+                // Menu link management
+                document.getElementById('add-menu-link-btn').addEventListener('click', () => this.showMenuLinkForm());
+                document.getElementById('cancel-menu-edit').addEventListener('click', () => this.hideForm('menu'));
+                document.getElementById('menu-link-form').addEventListener('submit', (e) => this.saveMenuLink(e));
+                this.elements.menuLinksList.addEventListener('click', (e) => this.handleMenuLinkActions(e));
+                
+                // Admin management
+                document.getElementById('admin-form').addEventListener('submit', (e) => this.addAdmin(e));
+                this.elements.adminsList.addEventListener('click', (e) => this.handleAdminActions(e));
+                
+                // Logout
+                document.getElementById('logout-btn').addEventListener('click', () => this.logout());
+                
+                // Mobile menu
+                this.elements.mobileMenuBtn.addEventListener('click', () => this.toggleMobileMenu());
+                this.elements.overlay.addEventListener('click', () => this.toggleMobileMenu());
+            }
+            
+            checkScreenSize() {
+                if (window.innerWidth <= 992) {
+                    this.elements.sidebar.classList.remove('col-md-2');
+                    this.elements.mainContent.classList.remove('col-md-10');
+                    this.elements.mainContent.classList.add('col-12');
+                } else {
+                    this.elements.sidebar.classList.add('col-md-2');
+                    this.elements.mainContent.classList.add('col-md-10');
+                    this.elements.mainContent.classList.remove('col-12');
+                    this.elements.sidebar.classList.remove('active');
+                    this.elements.overlay.classList.remove('active');
+                }
+            }
+            
+            toggleMobileMenu() {
+                this.elements.sidebar.classList.toggle('active');
+                this.elements.overlay.classList.toggle('active');
+            }
+            
+            checkAdminStatus(uid) {
+                database.ref('admins/' + uid).once('value')
+                    .then((snapshot) => {
+                        if (!snapshot.exists()) {
+                            alert("You don't have admin access");
+                            window.location.href = "courses.html";
+                        } else {
+                            this.loadData();
+                            this.showSection('courses');
+                        }
+                    });
+            }
+            
+            loadData() {
+                this.loadCourses();
+                this.loadMenuLinks();
+                this.loadAdmins();
+            }
+            
+            showSection(section, e) {
+                if (e) e.preventDefault();
+                
+                // Hide all sections
+                this.elements.coursesSection.style.display = 'none';
+                this.elements.menuSection.style.display = 'none';
+                this.elements.adminsSection.style.display = 'none';
+                
+                // Remove active class from all tabs
+                Object.values(this.elements.tabs).forEach(tab => tab.classList.remove('active'));
+                
+                // Show selected section
+                switch(section) {
+                    case 'courses':
+                        this.elements.coursesSection.style.display = 'block';
+                        this.elements.tabs.courses.classList.add('active');
+                        break;
+                    case 'menu':
+                        this.elements.menuSection.style.display = 'block';
+                        this.elements.tabs.menu.classList.add('active');
+                        break;
+                    case 'admins':
+                        this.elements.adminsSection.style.display = 'block';
+                        this.elements.tabs.admins.classList.add('active');
+                        break;
+                }
+                
+                // Close mobile menu if open
+                if (window.innerWidth <= 992) {
+                    this.toggleMobileMenu();
+                }
+            }
+            
+            // Course management methods
+            loadCourses() {
+                database.ref('courses').orderByChild('order').once('value')
+                    .then((snapshot) => {
+                        this.elements.coursesList.innerHTML = '';
+                        
+                        if (!snapshot.exists()) {
+                            this.elements.coursesList.innerHTML = '<p>No courses found</p>';
+                            return;
+                        }
+                        
+                        snapshot.forEach((childSnapshot) => {
+                            const course = childSnapshot.val();
+                            const courseId = childSnapshot.key;
+                            
+                            const courseCard = `
+                                <div class="col-12 col-sm-6 col-lg-4 mb-4">
+                                    <div class="card course-card">
+                                        <img src="https://img.youtube.com/vi/${course.youtube_id}/hqdefault.jpg" 
+                                             class="card-img-top" 
+                                             alt="${course.title}">
+                                        <div class="card-body">
+                                            <h5 class="card-title">${course.title}</h5>
+                                            <div class="d-flex flex-wrap">
+                                                <button class="btn btn-sm btn-primary edit-course btn-action" data-id="${courseId}">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </button>
+                                                <button class="btn btn-sm btn-danger delete-course btn-action" data-id="${courseId}">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            
+                            this.elements.coursesList.innerHTML += courseCard;
+                        });
+                    });
+            }
+            
+            showCourseForm(title = 'Add New Course', course = null) {
+                document.getElementById('form-title').textContent = title;
+                document.getElementById('course-id').value = course?.id || '';
+                document.getElementById('course-title').value = course?.title || '';
+                document.getElementById('youtube-id').value = course?.youtube_id || '';
+                document.getElementById('course-content').value = course?.content || '';
+                document.getElementById('course-order').value = course?.order || '';
+                this.elements.courseFormContainer.style.display = 'block';
+                
+                // Scroll to form on mobile
+                if (window.innerWidth <= 768) {
+                    this.elements.courseFormContainer.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+            
+            saveCourse(e) {
+                e.preventDefault();
+                
+                const courseId = document.getElementById('course-id').value || database.ref().child('courses').push().key;
+                const courseData = {
+                    title: document.getElementById('course-title').value,
+                    youtube_id: document.getElementById('youtube-id').value,
+                    content: document.getElementById('course-content').value,
+                    order: parseInt(document.getElementById('course-order').value)
+                };
+                
+                database.ref('courses/' + courseId).set(courseData)
+                    .then(() => {
+                        alert('Course saved successfully!');
+                        this.hideForm('course');
+                        this.loadCourses();
+                    })
+                    .catch((error) => {
+                        alert('Error saving course: ' + error.message);
+                    });
+            }
+            
+            handleCourseActions(e) {
+                const courseId = e.target.getAttribute('data-id');
+                
+                if (e.target.classList.contains('edit-course') || e.target.closest('.edit-course')) {
+                    database.ref('courses/' + courseId).once('value')
+                        .then((snapshot) => {
+                            const course = snapshot.val();
+                            this.showCourseForm('Edit Course', { id: courseId, ...course });
+                        });
+                }
+                
+                if (e.target.classList.contains('delete-course') || e.target.closest('.delete-course')) {
+                    if (confirm('Are you sure you want to delete this course?')) {
+                        database.ref('courses/' + courseId).remove()
+                            .then(() => this.loadCourses());
+                    }
+                }
+            }
+            
+            // Menu link management methods
+            loadMenuLinks() {
+                database.ref('menu_links').orderByChild('order').once('value')
+                    .then((snapshot) => {
+                        this.elements.menuLinksList.innerHTML = '';
+                        
+                        if (!snapshot.exists()) {
+                            this.elements.menuLinksList.innerHTML = '<p>No menu links found</p>';
+                            return;
+                        }
+                        
+                        snapshot.forEach((childSnapshot) => {
+                            const link = childSnapshot.val();
+                            const linkId = childSnapshot.key;
+                            
+                            const linkCard = `
+                                <div class="col-12 col-md-6 mb-3">
+                                    <div class="card menu-link-card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">${link.text}</h5>
+                                            <p class="card-text">URL: ${link.url}</p>
+                                            <p class="card-text">Order: ${link.order} | Visible: ${link.visible ? 'Yes' : 'No'}</p>
+                                            <div class="d-flex flex-wrap">
+                                                <button class="btn btn-sm btn-primary edit-menu-link btn-action" data-id="${linkId}">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </button>
+                                                <button class="btn btn-sm btn-danger delete-menu-link btn-action" data-id="${linkId}">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            
+                            this.elements.menuLinksList.innerHTML += linkCard;
+                        });
+                    });
+            }
+            
+            showMenuLinkForm(title = 'Add New Menu Link', link = null) {
+                document.getElementById('menu-link-id').value = link?.id || '';
+                document.getElementById('link-text').value = link?.text || '';
+                document.getElementById('link-url').value = link?.url || '';
+                document.getElementById('link-order').value = link?.order || '';
+                document.getElementById('link-visible').checked = link?.visible !== false;
+                this.elements.menuLinkFormContainer.style.display = 'block';
+                
+                // Scroll to form on mobile
+                if (window.innerWidth <= 768) {
+                    this.elements.menuLinkFormContainer.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+            
+            saveMenuLink(e) {
+                e.preventDefault();
+                
+                const linkId = document.getElementById('menu-link-id').value || database.ref().child('menu_links').push().key;
+                const linkData = {
+                    text: document.getElementById('link-text').value,
+                    url: document.getElementById('link-url').value,
+                    order: parseInt(document.getElementById('link-order').value),
+                    visible: document.getElementById('link-visible').checked
+                };
+                
+                database.ref('menu_links/' + linkId).set(linkData)
+                    .then(() => {
+                        alert('Menu link saved successfully!');
+                        this.hideForm('menu');
+                        this.loadMenuLinks();
+                    })
+                    .catch((error) => {
+                        alert('Error saving menu link: ' + error.message);
+                    });
+            }
+            
+            handleMenuLinkActions(e) {
+                const linkId = e.target.getAttribute('data-id');
+                
+                if (e.target.classList.contains('edit-menu-link') || e.target.closest('.edit-menu-link')) {
+                    database.ref('menu_links/' + linkId).once('value')
+                        .then((snapshot) => {
+                            const link = snapshot.val();
+                            this.showMenuLinkForm('Edit Menu Link', { id: linkId, ...link });
+                        });
+                }
+                
+                if (e.target.classList.contains('delete-menu-link') || e.target.closest('.delete-menu-link')) {
+                    if (confirm('Are you sure you want to delete this menu link?')) {
+                        database.ref('menu_links/' + linkId).remove()
+                            .then(() => this.loadMenuLinks());
+                    }
+                }
+            }
+            
+            // Admin management methods
+            loadAdmins() {
+                database.ref('admins').once('value')
+                    .then((snapshot) => {
+                        this.elements.adminsList.innerHTML = '';
+                        
+                        if (!snapshot.exists()) {
+                            this.elements.adminsList.innerHTML = '<p>No admins found</p>';
+                            return;
+                        }
+                        
+                        snapshot.forEach((childSnapshot) => {
+                            const admin = childSnapshot.val();
+                            const adminId = childSnapshot.key;
+                            
+                            const adminCard = `
+                                <div class="card mb-2">
+                                    <div class="card-body">
+                                        <h5>${admin.email} ${admin.isRoot ? '(Root Admin)' : ''}</h5>
+                                        ${admin.isRoot ? '' : `
+                                            <button class="btn btn-sm btn-danger remove-admin btn-action" data-id="${adminId}">
+                                                <i class="fas fa-user-minus"></i> Remove
+                                            </button>
+                                        `}
+                                    </div>
+                                </div>
+                            `;
+                            
+                            this.elements.adminsList.innerHTML += adminCard;
+                        });
+                    });
+            }
+            
+            addAdmin(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('admin-email').value;
+                const isRoot = document.getElementById('make-root').checked;
+                
+                const newAdminRef = database.ref('admins').push();
+                newAdminRef.set({
+                    email: email,
+                    isRoot: isRoot
+                })
+                .then(() => {
+                    alert('Admin added successfully!');
+                    document.getElementById('admin-form').reset();
+                    this.loadAdmins();
+                })
+                .catch((error) => {
+                    alert('Error adding admin: ' + error.message);
+                });
+            }
+            
+            handleAdminActions(e) {
+                if (e.target.classList.contains('remove-admin') || e.target.closest('.remove-admin')) {
+                    const adminId = e.target.getAttribute('data-id');
+                    if (confirm('Are you sure you want to remove this admin?')) {
+                        database.ref('admins/' + adminId).remove()
+                            .then(() => this.loadAdmins());
+                    }
+                }
+            }
+            
+            // Utility methods
+            hideForm(type) {
+                if (type === 'course') {
+                    this.elements.courseFormContainer.style.display = 'none';
+                } else if (type === 'menu') {
+                    this.elements.menuLinkFormContainer.style.display = 'none';
+                }
+            }
+            
+            logout() {
+                auth.signOut()
+                    .then(() => {
+                        window.location.href = "login.html";
+                    });
+            }
+        }
+        
+        // Initialize the admin panel when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new AdminPanel();
+        });
+    </script>
+</body>
+</html>

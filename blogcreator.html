@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Creator Tools</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="adminstyles.css">
+    <link rel="stylesheet" href="globalstyles.css">
+    <style>
+        :root {
+            --sidebar-bg: #2c3e50;
+            --sidebar-active: #3498db;
+            --sidebar-hover: #34495e;
+            --header-bg: #f8f9fa;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+        }
+        
+        /* Sidebar Styling */
+        .admin-nav {
+            background: var(--sidebar-bg);
+            min-height: 100vh;
+            padding: 20px 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
+        }
+        
+        .admin-nav .nav-item {
+            margin-bottom: 5px;
+        }
+        
+        .admin-nav .nav-link {
+            color: #ecf0f1;
+            padding: 12px 20px;
+            border-radius: 4px;
+            transition: var(--transition);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+        
+        .admin-nav .nav-link:hover {
+            background: var(--sidebar-hover);
+            color: white;
+            transform: translateX(3px);
+        }
+        
+        .admin-nav .nav-link.active {
+            background: var(--sidebar-active);
+            color: white;
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2);
+        }
+        
+        .admin-nav .nav-link i {
+            width: 24px;
+            text-align: center;
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .admin-nav #logout-btn {
+            margin-top: 30px;
+            padding: 10px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Main Content Styling */
+        .main-content {
+            padding: 30px;
+            background-color: #f5f7fa;
+        }
+        
+        .main-content h2 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eaecef;
+            font-weight: 600;
+        }
+        
+        /* Iframe Styling */
+        .tool-iframe {
+            width: 100%;
+            height: calc(100vh - 150px);
+            border: none;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            background: white;
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .admin-nav {
+                position: fixed;
+                z-index: 1000;
+                width: 250px;
+                left: -250px;
+            }
+            
+            .admin-nav.active {
+                left: 0;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+            
+            #mobile-menu-btn {
+                display: block;
+            }
+            
+            .tool-iframe {
+                height: calc(100vh - 120px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Button -->
+    <button id="mobile-menu-btn" class="btn btn-primary mobile-menu-btn d-md-none" style="position: fixed; top: 10px; left: 10px; z-index: 1050;">
+        <i class="fas fa-bars me-2"></i> Menu
+    </button>
+    
+    <!-- Overlay for mobile menu -->
+    <div id="overlay" class="overlay"></div>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 admin-nav" id="sidebar">
+                <div class="d-flex flex-column h-100">
+                    <div class="text-center mb-4">
+                        <h4 class="text-white mb-0 py-3">Blog Creator</h4>
+                    </div>
+                    
+                    <ul class="nav flex-column flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin">
+                                <i class="fas fa-home"></i> Home
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/blogadmin">
+                                <i class="fas fa-arrow-left"></i> Back to Blogs
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" id="automation-tab">
+                                <i class="fas fa-robot"></i> Blog Automation
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="image-tab">
+                                <i class="fas fa-image"></i> Blog Image Creator
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <div class="mt-auto px-3 pb-4">
+                        <button id="logout-btn" class="btn btn-danger w-100">
+                            <i class="fas fa-sign-out-alt me-2"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 py-4 main-content" id="main-content">
+                <!-- Blog Automation Tool -->
+                <div id="automation-section">
+                    <h2>Blog Automation Tool</h2>
+                    <iframe src="./blogautomator.html" class="tool-iframe" id="automation-iframe"></iframe>
+                </div>
+                
+                <!-- Blog Image Creator Tool -->
+                <div id="image-section" style="display: none;">
+                    <h2>Blog Image Creator</h2>
+                    <iframe src="./blogimgcreator.html" class="tool-iframe" id="image-iframe"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-database-compat.js"></script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAR2sGQx5Mxz_TZRfRyecWva346jBYel-8",
+            authDomain: "chatapp-fa81d.firebaseapp.com",
+            databaseURL: "https://chatapp-fa81d-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "chatapp-fa81d",
+            storageBucket: "chatapp-fa81d.firebasestorage.app",
+            messagingSenderId: "308333202130",
+            appId: "1:308333202130:web:b9c4fc84eff5bb065f3b0b"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // Main Blog Creator Class
+        class BlogCreator {
+            constructor() {
+                this.initAuth();
+                this.cacheElements();
+                this.bindEvents();
+                this.initMobileMenu();
+            }
+            
+            initAuth() {
+                auth.onAuthStateChanged(user => {
+                    if (!user) {
+                        window.location.href = "login";
+                    } else {
+                        this.checkAdminStatus(user.uid);
+                    }
+                });
+            }
+            
+            cacheElements() {
+                this.elements = {
+                    // Sections
+                    automationSection: document.getElementById('automation-section'),
+                    imageSection: document.getElementById('image-section'),
+                    
+                    // Iframes
+                    automationIframe: document.getElementById('automation-iframe'),
+                    imageIframe: document.getElementById('image-iframe'),
+                    
+                    // Tabs
+                    tabs: {
+                        automation: document.getElementById('automation-tab'),
+                        image: document.getElementById('image-tab')
+                    },
+                    
+                    // Mobile menu elements
+                    mobileMenuBtn: document.getElementById('mobile-menu-btn'),
+                    overlay: document.getElementById('overlay'),
+                    sidebar: document.getElementById('sidebar')
+                };
+            }
+            
+            initMobileMenu() {
+                this.elements.mobileMenuBtn.addEventListener('click', () => {
+                    this.elements.sidebar.classList.toggle('active');
+                    this.elements.overlay.classList.toggle('active');
+                });
+                
+                this.elements.overlay.addEventListener('click', () => {
+                    this.elements.sidebar.classList.remove('active');
+                    this.elements.overlay.classList.remove('active');
+                });
+            }
+            
+            bindEvents() {
+                // Navigation tabs
+                this.elements.tabs.automation.addEventListener('click', (e) => this.showSection('automation', e));
+                this.elements.tabs.image.addEventListener('click', (e) => this.showSection('image', e));
+                
+                // Logout
+                document.getElementById('logout-btn').addEventListener('click', () => this.logout());
+            }
+            
+            checkAdminStatus(uid) {
+                database.ref('admins/' + uid).once('value')
+                    .then((snapshot) => {
+                        if (!snapshot.exists()) {
+                            alert("You don't have admin access");
+                            window.location.href = "courses";
+                        } else {
+                            this.showSection('automation');
+                        }
+                    });
+            }
+            
+            showSection(section, e) {
+                if (e) e.preventDefault();
+                
+                // Hide all sections
+                this.elements.automationSection.style.display = 'none';
+                this.elements.imageSection.style.display = 'none';
+                
+                // Remove active class from all tabs
+                Object.values(this.elements.tabs).forEach(tab => tab.classList.remove('active'));
+                
+                // Show selected section
+                switch(section) {
+                    case 'automation':
+                        this.elements.automationSection.style.display = 'block';
+                        this.elements.tabs.automation.classList.add('active');
+                        break;
+                    case 'image':
+                        this.elements.imageSection.style.display = 'block';
+                        this.elements.tabs.image.classList.add('active');
+                        break;
+                }
+            }
+            
+            logout() {
+                auth.signOut()
+                    .then(() => {
+                        window.location.href = "login";
+                    });
+            }
+        }
+        
+        // Initialize the blog creator when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new BlogCreator();
+        });
+    </script>
+</body>
+</html>

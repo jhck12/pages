@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="globalstyles.css" >
+    <style>
+        /* Main Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+        }
+        
+        /* Sidebar Styles */
+        .admin-nav {
+            background: #2c3e50;
+            min-height: 100vh;
+            padding: 20px 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .admin-nav .nav-item {
+            margin-bottom: 5px;
+        }
+        
+        .admin-nav .nav-link {
+            color: #ecf0f1;
+            padding: 12px 20px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+        
+        .admin-nav .nav-link:hover {
+            background: #34495e;
+            color: white;
+            transform: translateX(3px);
+        }
+        
+        .admin-nav .nav-link.active {
+            background: #3498db;
+            color: white;
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2);
+        }
+        
+        .admin-nav .nav-link i {
+            width: 24px;
+            text-align: center;
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .admin-nav #logout-btn {
+            margin-top: 30px;
+            padding: 10px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Main Content Styles */
+        .main-content {
+            padding: 30px;
+            background-color: #f5f7fa;
+        }
+        
+        .main-content h2 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eaecef;
+            font-weight: 600;
+        }
+        
+        /* Card Styles */
+        .card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Form Styles */
+        .form-section {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        /* CSS Editor Specific Styles */
+        #css-editor-section .form-control {
+            font-family: 'Courier New', monospace;
+        }
+        
+        #full-css-editor {
+            font-family: 'Courier New', monospace;
+            min-height: 300px;
+            white-space: pre;
+        }
+        
+        .css-example {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+            .admin-nav {
+                position: fixed;
+                width: 250px;
+                left: -250px;
+                z-index: 1000;
+            }
+            
+            .admin-nav.active {
+                left: 0;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .mobile-menu-btn {
+                display: block !important;
+            }
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            left: 10px;
+            top: 10px;
+            z-index: 1100;
+            background: #343a40;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+        }
+        
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        
+        .overlay.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Button -->
+    <button id="mobile-menu-btn" class="mobile-menu-btn">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Overlay for mobile menu -->
+    <div id="overlay" class="overlay"></div>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 admin-nav" id="sidebar">
+                <div class="d-flex flex-column h-100">
+                    <div class="text-center mb-4">
+                        <h4 class="text-white mb-0 py-3">Admin Panel</h4>
+                    </div>
+                    
+                    <ul class="nav flex-column flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" id="courses-tab">
+                                <i class="fas fa-book"></i> Courses
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="menu-tab">
+                                <i class="fas fa-link"></i> Menu Links
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="admins-tab">
+                                <i class="fas fa-users-cog"></i> Admin Users
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="./blogadmin" id="blogs-tab">
+                                <i class="fas fa-blog"></i> Blogs
+                            </a>
+                        </li>
+                        <!-- CSS Editor Link -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="css-editor-tab">
+                                <i class="fas fa-paint-brush"></i> CSS Editor
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <div class="mt-auto px-3 pb-4">
+                        <button id="logout-btn" class="btn btn-danger w-100">
+                            <i class="fas fa-sign-out-alt me-2"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 py-4 main-content" id="main-content">
+                <!-- Courses Management -->
+                <div id="courses-section">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="mb-0">Manage Courses</h2>
+                        <button class="btn btn-primary" id="add-course-btn">
+                            <i class="fas fa-plus me-2"></i> New Course
+                        </button>
+                    </div>
+                    
+                    <div id="courses-list" class="row">
+                        <!-- Courses will load here -->
+                    </div>
+                    
+                    <div id="course-form-container" class="form-section" style="display: none;">
+                        <h3 id="form-title" class="mb-4">Add New Course</h3>
+                        <form id="course-form">
+                            <input type="hidden" id="course-id">
+                            <div class="mb-4">
+                                <label for="course-title" class="form-label">Title</label>
+                                <input type="text" class="form-control" id="course-title" required>
+                            </div>
+                            <div class="mb-4">
+                                <label for="youtube-id" class="form-label">YouTube Video ID</label>
+                                <input type="text" class="form-control" id="youtube-id" required>
+                                <small class="text-muted">Just the ID (e.g. "dQw4w9WgXcQ")</small>
+                            </div>
+                            <div class="mb-4">
+                                <label for="course-content" class="form-label">Content</label>
+                                <textarea class="form-control" id="course-content" rows="5"></textarea>
+                            </div>
+                            <div class="mb-4">
+                                <label for="course-order" class="form-label">Order</label>
+                                <input type="number" class="form-control" id="course-order" required>
+                            </div>
+                            <div class="d-flex justify-content-end gap-2">
+                                <button type="button" class="btn btn-secondary" id="cancel-course-edit">
+                                    <i class="fas fa-times me-2"></i> Cancel
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i> Save Course
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Menu Links Management -->
+                <div id="menu-section" class="form-section" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="mb-0">Manage Menu Links</h2>
+                        <button class="btn btn-primary" id="add-menu-link-btn">
+                            <i class="fas fa-plus me-2"></i> New Link
+                        </button>
+                    </div>
+                    
+                    <div id="menu-links-list" class="row">
+                        <!-- Menu links will load here -->
+                    </div>
+                    
+                    <div id="menu-link-form-container" class="form-section" style="display: none;">
+                        <h3 class="mb-4">Add/Edit Menu Link</h3>
+                        <form id="menu-link-form">
+                            <input type="hidden" id="menu-link-id">
+                            <div class="mb-4">
+                                <label for="link-text" class="form-label">Text</label>
+                                <input type="text" class="form-control" id="link-text" required>
+                            </div>
+                            <div class="mb-4">
+                                <label for="link-url" class="form-label">URL</label>
+                                <input type="text" class="form-control" id="link-url" required>
+                            </div>
+                            <div class="mb-4">
+                                <label for="link-order" class="form-label">Order</label>
+                                <input type="number" class="form-control" id="link-order" required>
+                            </div>
+                            <div class="mb-4 form-check form-switch">
+                                <input type="checkbox" class="form-check-input" id="link-visible" checked>
+                                <label class="form-check-label" for="link-visible">Visible</label>
+                            </div>
+                            <div class="d-flex justify-content-end gap-2">
+                                <button type="button" class="btn btn-secondary" id="cancel-menu-edit">
+                                    <i class="fas fa-times me-2"></i> Cancel
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i> Save Link
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Admin Users Management -->
+                <div id="admins-section" class="form-section" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="mb-0">Admin Users</h2>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> Only root admins can manage other admins
+                    </div>
+                    
+                    <div id="admins-list" class="row">
+                        <!-- Admins will load here -->
+                    </div>
+                    
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Add New Admin</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="admin-form">
+                                <div class="mb-4">
+                                    <label for="admin-email" class="form-label">User Email</label>
+                                    <input type="email" class="form-control" id="admin-email" required>
+                                </div>
+                                <div class="mb-4 form-check form-switch">
+                                    <input type="checkbox" class="form-check-input" id="make-root">
+                                    <label class="form-check-label" for="make-root">Make Root Admin</label>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-user-plus me-2"></i> Add Admin
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- CSS Editor Section -->
+                <div id="css-editor-section" class="form-section" style="display: none;">
+                    <h2>Global CSS Editor</h2>
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle me-2"></i> Changes made here will affect the entire site's appearance.
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Quick CSS Rule</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="css-selector" class="form-label">CSS Selector</label>
+                                <input type="text" class="form-control" id="css-selector" placeholder="e.g. .admin-nav, #sidebar, h2">
+                                <div class="css-example">Examples: ".card", "#main-content", "body"</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="css-property" class="form-label">Property</label>
+                                <input type="text" class="form-control" id="css-property" placeholder="e.g. background-color, font-size">
+                                <div class="css-example">Examples: "color", "padding", "border-radius"</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="css-value" class="form-label">Value</label>
+                                <input type="text" class="form-control" id="css-value" placeholder="e.g. #2c3e50, 1.5rem">
+                                <div class="css-example">Examples: "red", "20px", "bold"</div>
+                            </div>
+                            
+                            <button id="apply-css" class="btn btn-primary me-2">
+                                <i class="fas fa-check me-2"></i>Apply Style
+                            </button>
+                            <button id="reset-css" class="btn btn-danger">
+                                <i class="fas fa-undo me-2"></i>Reset All Styles
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Advanced CSS Editor</h5>
+                        </div>
+                        <div class="card-body">
+                            <textarea id="full-css-editor" class="form-control" rows="10" placeholder="Enter full CSS rules here..."></textarea>
+                            <button id="apply-full-css" class="btn btn-primary mt-3">
+                                <i class="fas fa-check me-2"></i>Apply Full CSS
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
+   <script src="admin-panel.js"></script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+
+    
+    <!-- Main Script -->
+    <script>
+
+        
+        // Mobile Menu Toggle
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        });
+        
+        document.getElementById('overlay').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.remove('active');
+            this.classList.remove('active');
+        });
+        
+        // Tab Switching
+        const tabs = {
+            courses: document.getElementById('courses-tab'),
+            menu: document.getElementById('menu-tab'),
+            admins: document.getElementById('admins-tab'),
+            cssEditor: document.getElementById('css-editor-tab')
+        };
+        
+        const sections = {
+            courses: document.getElementById('courses-section'),
+            menu: document.getElementById('menu-section'),
+            admins: document.getElementById('admins-section'),
+            cssEditor: document.getElementById('css-editor-section')
+        };
+        
+        // Add click event for each tab
+        Object.keys(tabs).forEach(tab => {
+            tabs[tab].addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Hide all sections
+                Object.values(sections).forEach(section => {
+                    section.style.display = 'none';
+                });
+                
+                // Remove active class from all tabs
+                Object.values(tabs).forEach(t => {
+                    t.classList.remove('active');
+                });
+                
+                // Show selected section and mark tab as active
+                sections[tab].style.display = 'block';
+                this.classList.add('active');
+            });
+        });
+        
+        // Initialize with courses section visible
+        tabs.courses.classList.add('active');
+        sections.courses.style.display = 'block';
+        
+        // CSS Editor Functions
+        let styleElement = null;
+        
+        function initCssEditor() {
+            // Create style element if it doesn't exist
+            styleElement = document.getElementById('dynamic-css');
+            if (!styleElement) {
+                styleElement = document.createElement('style');
+                styleElement.id = 'dynamic-css';
+                document.head.appendChild(styleElement);
+            }
+            
+            // Load saved CSS
+            loadCssFromFirebase().then(css => {
+                if (css) {
+                    styleElement.textContent = css;
+                    document.getElementById('full-css-editor').value = css;
+                }
+            }).catch(error => {
+                console.log("Using fallback localStorage");
+                const localCss = localStorage.getItem('global_css');
+                if (localCss) {
+                    styleElement.textContent = localCss;
+                    document.getElementById('full-css-editor').value = localCss;
+                }
+            });
+            
+            // Setup event listeners
+            document.getElementById('apply-css').addEventListener('click', applySingleCss);
+            document.getElementById('apply-full-css').addEventListener('click', applyFullCss);
+            document.getElementById('reset-css').addEventListener('click', resetCss);
+        }
+        
+        function applySingleCss() {
+            const selector = document.getElementById('css-selector').value.trim();
+            const property = document.getElementById('css-property').value.trim();
+            const value = document.getElementById('css-value').value.trim();
+            
+            if (!selector || !property || !value) {
+                showAlert('Please fill all fields', 'danger');
+                return;
+            }
+            
+            const newRule = `${selector} { ${property}: ${value} !important; }`;
+            const updatedCss = styleElement.textContent + '\n' + newRule;
+            styleElement.textContent = updatedCss;
+            
+            saveCssToFirebase(updatedCss).then(() => {
+                showAlert('CSS rule applied and saved!', 'success');
+            }).catch(error => {
+                showAlert('Error saving CSS: ' + error.message, 'danger');
+            });
+        }
+        
+        function applyFullCss() {
+            const fullCss = document.getElementById('full-css-editor').value;
+            styleElement.textContent = fullCss;
+            
+            saveCssToFirebase(fullCss).then(() => {
+                showAlert('Full CSS applied and saved!', 'success');
+            }).catch(error => {
+                showAlert('Error saving CSS: ' + error.message, 'danger');
+            });
+        }
+        
+        function resetCss() {
+            if (confirm('Are you sure you want to reset ALL custom CSS styles?')) {
+                styleElement.textContent = '';
+                document.getElementById('full-css-editor').value = '';
+                
+                saveCssToFirebase('').then(() => {
+                    showAlert('CSS reset successfully!', 'success');
+                }).catch(error => {
+                    showAlert('Error resetting CSS: ' + error.message, 'danger');
+                });
+            }
+        }
+        
+        function saveCssToFirebase(css) {
+            const user = firebase.auth().currentUser;
+            
+            if (!user) {
+                console.error("User not authenticated");
+                localStorage.setItem('global_css', css);
+                return Promise.reject("Not logged in, using localStorage");
+            }
+            
+  return firebase.database().ref('global_css').set({
+    css: css,
+    lastUpdated: firebase.database.ServerValue.TIMESTAMP,
+    updatedBy: firebase.auth().currentUser.email
+  });
+}
+        
+        function loadCssFromFirebase() {
+            const user = firebase.auth().currentUser;
+            
+            if (!user) {
+                return Promise.reject("User not authenticated");
+            }
+            
+            return firebase.database().ref('global_css/' + user.uid).once('value')
+                .then(snapshot => {
+                    const cssData = snapshot.val();
+                    return cssData ? cssData.css : null;
+                });
+        }
+        
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show mt-3`;
+            alertDiv.role = 'alert';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            const container = document.getElementById('css-editor-section');
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            setTimeout(() => {
+                alertDiv.classList.remove('show');
+                setTimeout(() => alertDiv.remove(), 150);
+            }, 3000);
+        }
+        
+        // Initialize when user is logged in
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (user) {
+                initCssEditor();
+            }
+        });
+        
+        // Logout button
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            firebase.auth().signOut().then(() => {
+                window.location.href = "login";
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="./global-css-editor.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="seo-title">Loading post...</title>
+    <meta name="description" id="seo-description" content="">
+    <meta name="keywords" id="focus-keyphrase" content="">
+    <link rel="canonical" id="canonical-url" href="">
+    
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" id="og-title" content="">
+    <meta property="og:description" id="og-description" content="">
+    <meta property="og:type" content="article">
+    <meta property="og:url" id="og-url" content="">
+    <meta property="og:image" id="og-image" content="">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .blog-hero {
+            background-color: #f8f9fa;
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+        }
+        .blog-content {
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+        .blog-content img {
+            max-width: 100%;
+            height: auto;
+            margin: 1rem 0;
+            border-radius: 5px;
+        }
+        .blog-content h2, .blog-content h3 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        .blog-meta {
+            color: #6c757d;
+        }
+        .author-card {
+            border-left: 3px solid #0d6efd;
+        }
+        .tag-badge {
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        .related-post img {
+            height: 150px;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <!-- Dynamic Header will be inserted here -->
+    
+    <div class="container py-4">
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Blog Post Content -->
+                <article id="blog-post">
+                    <div class="text-center mb-4">
+                        <h1 id="post-title">Loading post...</h1>
+                        <div class="blog-meta mb-3">
+                            <span id="post-date"></span> • 
+                            <span id="read-time"></span> read • 
+                            <a href="#" id="post-category"></a>
+                        </div>
+                        <img id="featured-image" class="img-fluid rounded" style="display: none;">
+                    </div>
+                    
+                    <div class="blog-content" id="post-content">
+                        <p>Loading content...</p>
+                    </div>
+                    
+                    <!-- Tags -->
+                    <div class="mt-4" id="post-tags"></div>
+                    
+                    <!-- Author Info -->
+                    <div class="card author-card mt-5">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <img src="https://via.placeholder.com/80" alt="Author" class="rounded-circle me-3">
+                                <div>
+                                    <h5>About The Author</h5>
+                                    <p class="mb-0">This post was created by the site administrator.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+                
+                <!-- Comments Section -->
+                <div class="mt-5" id="comments-section">
+                    <h4>Comments</h4>
+                    <div class="alert alert-info">
+                        Comments functionality coming soon!
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- About Widget -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5>About This Blog</h5>
+                        <p>Welcome to our blog where we share insights, tutorials, and news about our field.</p>
+                    </div>
+                </div>
+                
+                <!-- Categories Widget -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Categories</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush" id="categories-sidebar">
+                            <!-- Categories will load here -->
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Related Posts -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Related Posts</h5>
+                    </div>
+                    <div class="card-body" id="related-posts">
+                        <!-- Related posts will load here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="./global-css-editor.js"></script>
+    
+    <!-- Quill JS for rendering formatted content -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    
+    <!-- Blog Single Post Logic -->
+    <script>
+        // Initialize Quill for rendering (read-only)
+        const quill = new Quill('#post-content', {
+            theme: 'bubble',
+            readOnly: true,
+            modules: {
+                toolbar: false
+            }
+        });
+        
+        // Get post slug from URL
+        function getPostSlugFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('title');
+        }
+        
+        // Load blog post
+        function loadBlogPost() {
+            const postSlug = getPostSlugFromUrl();
+            
+            if (!postSlug) {
+                window.location.href = "blog";
+                return;
+            }
+            
+            // Search for post by slug
+            database.ref('blogs').orderByChild('slug').equalTo(postSlug).once('value')
+                .then((snapshot) => {
+                    if (!snapshot.exists()) {
+                        window.location.href = "blog";
+                        return;
+                    }
+                    
+                    // Get the first matching post (should be only one)
+                    let post = null;
+                    let postId = null;
+                    snapshot.forEach((childSnapshot) => {
+                        post = childSnapshot.val();
+                        postId = childSnapshot.key;
+                    });
+                    
+                    if (!post) {
+                        window.location.href = "blog";
+                        return;
+                    }
+                    
+                    displayBlogPost(post, postId);
+                    loadRelatedPosts(post.category, postId);
+                    loadCategories();
+                })
+                .catch((error) => {
+                    console.error("Error loading blog post:", error);
+                    window.location.href = "blog";
+                });
+        }
+        
+        // Display blog post
+        function displayBlogPost(post, postId) {
+            if (post.status !== 'published') {
+                window.location.href = "blog";
+                return;
+            }
+            
+            // Set basic info
+            document.getElementById('post-title').textContent = post.title;
+            document.title = post.seoTitle || post.title + " | Our Blog";
+            
+            // Set SEO elements
+            document.getElementById('seo-title').textContent = post.seoTitle || post.title;
+            document.getElementById('seo-description').setAttribute('content', post.seoDescription || post.excerpt || '');
+            document.getElementById('focus-keyphrase').setAttribute('content', post.focusKeyphrase || '');
+            document.getElementById('canonical-url').setAttribute('href', post.canonicalUrl || window.location.href);
+            
+            // Set Open Graph meta tags
+            document.getElementById('og-title').setAttribute('content', post.seoTitle || post.title);
+            document.getElementById('og-description').setAttribute('content', post.seoDescription || post.excerpt || '');
+            document.getElementById('og-url').setAttribute('content', window.location.href);
+            if (post.featuredImage) {
+                document.getElementById('og-image').setAttribute('content', post.featuredImage);
+            }
+            
+            // Set date
+            const postDate = new Date(post.createdAt);
+            document.getElementById('post-date').textContent = postDate.toLocaleDateString('en-US', {
+                year: 'numeric', month: 'long', day: 'numeric'
+            });
+            
+            // Set read time
+            const readTime = Math.ceil(post.content.length / 1500);
+            document.getElementById('read-time').textContent = readTime + " min";
+            
+            // Set featured image
+            if (post.featuredImage) {
+                const featuredImg = document.getElementById('featured-image');
+                featuredImg.src = post.featuredImage;
+                featuredImg.alt = post.title;
+                featuredImg.style.display = 'block';
+            }
+            
+            // Set category
+            if (post.category) {
+                const categoryLink = document.getElementById('post-category');
+                categoryLink.textContent = post.category;
+                categoryLink.href = `blog?category=${post.category}`;
+            } else {
+                document.getElementById('post-category').style.display = 'none';
+            }
+            
+            // Set content
+            try {
+                const content = JSON.parse(post.content);
+                quill.setContents(content);
+            } catch (e) {
+                quill.setText(post.content || 'No content available');
+            }
+            
+            // Set tags
+            const tagsContainer = document.getElementById('post-tags');
+            if (post.tags && post.tags.length > 0) {
+                tagsContainer.innerHTML = '<h5>Tags:</h5>';
+                post.tags.forEach(tag => {
+                    const tagBadge = document.createElement('a');
+                    tagBadge.className = 'badge bg-secondary tag-badge';
+                    tagBadge.href = `blog?tag=${tag}`;
+                    tagBadge.textContent = tag;
+                    tagsContainer.appendChild(tagBadge);
+                });
+            } else {
+                tagsContainer.style.display = 'none';
+            }
+        }
+        
+        // Load related posts
+        function loadRelatedPosts(category, currentPostId) {
+            if (!category) return;
+            
+            database.ref('blogs').orderByChild('category').equalTo(category).limitToLast(3).once('value')
+                .then((snapshot) => {
+                    const relatedPostsContainer = document.getElementById('related-posts');
+                    relatedPostsContainer.innerHTML = '';
+                    
+                    if (!snapshot.exists()) return;
+                    
+                    const posts = [];
+                    snapshot.forEach((childSnapshot) => {
+                        const post = childSnapshot.val();
+                        if (post.status === 'published' && childSnapshot.key !== currentPostId) {
+                            posts.unshift(post);
+                        }
+                    });
+                    
+                    if (posts.length === 0) {
+                        relatedPostsContainer.innerHTML = '<p>No related posts found.</p>';
+                        return;
+                    }
+                    
+                    // Show max 3 related posts
+                    posts.slice(0, 3).forEach(post => {
+                        const postDate = new Date(post.createdAt);
+                        const postCard = `
+                            <div class="mb-3">
+                                <div class="row g-0">
+                                    ${post.featuredImage ? `
+                                        <div class="col-md-4">
+                                            <img src="${post.featuredImage}" class="img-fluid rounded-start" alt="${post.title}">
+                                        </div>
+                                        <div class="col-md-8">
+                                    ` : '<div class="col-12">'}
+                                            <div class="card-body">
+                                                <h6 class="card-title"><a href="blog-single?title=${post.slug}">${post.title}</a></h6>
+                                                <p class="card-text"><small class="text-muted">${postDate.toLocaleDateString()}</small></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        relatedPostsContainer.innerHTML += postCard;
+                    });
+                });
+        }
+        
+        // Load categories for sidebar
+        function loadCategories() {
+            database.ref('categories').once('value')
+                .then((snapshot) => {
+                    const categoriesList = document.getElementById('categories-sidebar');
+                    categoriesList.innerHTML = '';
+                    
+                    if (snapshot.exists()) {
+                        snapshot.forEach((childSnapshot) => {
+                            const category = childSnapshot.val();
+                            const li = document.createElement('li');
+                            li.className = 'list-group-item';
+                            li.innerHTML = `
+                                <a href="blog?category=${childSnapshot.key}">${category.name}</a>
+                                <span class="badge bg-primary rounded-pill float-end">${category.count || 0}</span>
+                            `;
+                            categoriesList.appendChild(li);
+                        });
+                    }
+                });
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadBlogPost();
+        });
+    </script>
+</body>
+</html>

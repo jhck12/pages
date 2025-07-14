@@ -1,0 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+* {
+  font-family: 'Space Mono', monospace !important;
+  box-sizing: border-box;
+}
+
+.fas, .far, .fab, .fa {
+  font-family: 'Font Awesome 6 Free' !important;
+}
+
+/* For Font Awesome 6 (if using the new version) */
+.fa-solid, .fa-regular, .fa-brands, .fa-light, .fa-thin, .fa-duotone {
+  font-family: 'Font Awesome 6 Free' !important;
+}
