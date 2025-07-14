@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <link rel="stylesheet" href="globalstyles.css">
+    <style>
+        /* Main Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+        }
+        
+        /* Sidebar Styles */
+        .admin-nav {
+            background: #2c3e50;
+            min-height: 100vh;
+            padding: 20px 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .admin-nav .nav-item {
+            margin-bottom: 5px;
+        }
+        
+        .admin-nav .nav-link {
+            color: #ecf0f1;
+            padding: 12px 20px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+        
+        .admin-nav .nav-link:hover {
+            background: #34495e;
+            color: white;
+            transform: translateX(3px);
+        }
+        
+        .admin-nav .nav-link.active {
+            background: #3498db;
+            color: white;
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2);
+        }
+        
+        .admin-nav .nav-link i {
+            width: 24px;
+            text-align: center;
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .admin-nav #logout-btn {
+            margin-top: 30px;
+            padding: 10px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Main Content Styles */
+        .main-content {
+            padding: 30px;
+            background-color: #f5f7fa;
+        }
+        
+        .main-content h2 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eaecef;
+            font-weight: 600;
+        }
+        
+        /* Card Styles */
+        .card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Form Styles */
+        .form-section {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        /* Quill Editor Styles */
+        #blog-editor {
+            height: 400px;
+            margin-bottom: 20px;
+            background: white;
+            border-radius: 4px;
+        }
+        
+        /* Status Messages */
+        .status-message {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+        
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+            .admin-nav {
+                position: fixed;
+                width: 250px;
+                left: -250px;
+                z-index: 1000;
+            }
+            
+            .admin-nav.active {
+                left: 0;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .mobile-menu-btn {
+                display: block !important;
+            }
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            left: 10px;
+            top: 10px;
+            z-index: 1100;
+            background: #343a40;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+        }
+        
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        
+        .overlay.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Button -->
+    <button id="mobile-menu-btn" class="mobile-menu-btn">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Overlay for mobile menu -->
+    <div id="overlay" class="overlay"></div>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 admin-nav" id="sidebar">
+                <div class="d-flex flex-column h-100">
+                    <div class="text-center mb-4">
+                        <h4 class="text-white mb-0 py-3">Blog Admin</h4>
+                    </div>
+                    
+                    <ul class="nav flex-column flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" id="blog-creator-tab">
+                                <i class="fas fa-newspaper"></i> Blog Creator
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="github-token-tab">
+                                <i class="fas fa-key"></i> GitHub Token
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="settings-tab">
+                                <i class="fas fa-cog"></i> Settings
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <div class="mt-auto px-3 pb-4">
+                        <button id="logout-btn" class="btn btn-danger w-100">
+                            <i class="fas fa-sign-out-alt me-2"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 py-4 main-content" id="main-content">
+                <!-- Blog Creator Panel -->
+                <div id="blog-creator-section">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="mb-0">Create New Blog Post</h2>
+                    </div>
+                    
+                    <div id="post-status" class="status-message"></div>
+                    
+                    <div class="form-section">
+                        <form id="blog-form">
+                            <div class="mb-4">
+                                <label for="blog-title" class="form-label">Title</label>
+                                <input type="text" class="form-control" id="blog-title" required>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <label for="blog-slug" class="form-label">URL Slug</label>
+                                    <input type="text" class="form-control" id="blog-slug" required>
+                                    <small class="text-muted">Will be used in the post URL (e.g. "my-first-post")</small>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <label for="blog-category" class="form-label">Category</label>
+                                    <select class="form-select" id="blog-category">
+                                        <option value="general">General</option>
+                                        <option value="tutorials">Tutorials</option>
+                                        <option value="updates">Updates</option>
+                                        <option value="announcements">Announcements</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="featured-image" class="form-label">Featured Image URL</label>
+                                <input type="url" class="form-control" id="featured-image">
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">Content</label>
+                                <div id="blog-editor"></div>
+                            </div>
+                            
+                            <!-- SEO Fields -->
+                            <div class="border-top pt-4 mb-4">
+                                <h5 class="mb-3">SEO Settings</h5>
+                                <div class="mb-4">
+                                    <label for="seo-title" class="form-label">SEO Title</label>
+                                    <input type="text" class="form-control" id="seo-title">
+                                </div>
+                                <div class="mb-4">
+                                    <label for="seo-description" class="form-label">SEO Description</label>
+                                    <textarea class="form-control" id="seo-description" rows="3"></textarea>
+                                </div>
+                                <div class="mb-4">
+                                    <label for="blog-tags" class="form-label">Tags (comma separated)</label>
+                                    <input type="text" class="form-control" id="blog-tags">
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-2"></i> Publish to GitHub
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- GitHub Token Panel -->
+                <div id="github-token-section" class="form-section" style="display: none;">
+                    <h2 class="mb-4">GitHub Token Settings</h2>
+                    <div id="token-status" class="status-message"></div>
+                    
+                    <form id="github-token-form">
+                        <div class="mb-4">
+                            <label for="github-token-input" class="form-label">GitHub Personal Access Token</label>
+                            <input type="password" class="form-control" id="github-token-input" required>
+                            <small class="text-muted">Create a token with repo permissions in GitHub Settings</small>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="github-repo" class="form-label">Repository</label>
+                            <input type="text" class="form-control" id="github-repo" placeholder="username/repo" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="github-path" class="form-label">Path in Repository</label>
+                            <input type="text" class="form-control" id="github-path" placeholder="blog/">
+                            <small class="text-muted">Leave empty to save in root</small>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="github-branch" class="form-label">Branch</label>
+                            <input type="text" class="form-control" id="github-branch" value="main" required>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i> Save Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Settings Panel -->
+                <div id="settings-section" class="form-section" style="display: none;">
+                    <h2 class="mb-4">Blog Settings</h2>
+                    <div id="settings-status" class="status-message"></div>
+                    
+                    <form id="settings-form">
+                        <div class="mb-4">
+                            <label for="permalink-base" class="form-label">Permalink Base</label>
+                            <select class="form-select" id="permalink-base">
+                                <option value="blogs">/blogs/</option>
+                                <option value="posts">/posts/</option>
+                                <option value="articles">/articles/</option>
+                                <option value="pages">/pages/</option>
+                            </select>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i> Save Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    
+    <!-- Quill Rich Text Editor -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Initialize Quill editor
+        const quill = new Quill('#blog-editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link', 'image'],
+                    ['clean']
+                ]
+            },
+            placeholder: 'Write your blog post content here...'
+        });
+
+        // Main Blog Manager Class
+        class BlogAdminPanel {
+            constructor() {
+                this.initAuth();
+                this.initElements();
+                this.bindEvents();
+                this.checkScreenSize();
+                window.addEventListener('resize', () => this.checkScreenSize());
+            }
+            
+            initAuth() {
+                firebase.auth().onAuthStateChanged(user => {
+                    if (!user) {
+                        window.location.href = "login";
+                    } else {
+                        this.checkAdminStatus(user.uid);
+                    }
+                });
+            }
+            
+            checkAdminStatus(uid) {
+                firebase.database().ref('admins/' + uid).once('value')
+                    .then((snapshot) => {
+                        if (!snapshot.exists() || !snapshot.val().isRoot) {
+                            alert("You don't have admin access");
+                            window.location.href = "login";
+                        } else {
+                            this.loadSettings();
+                        }
+                    });
+            }
+            
+            initElements() {
+                this.elements = {
+                    // Sections
+                    sections: {
+                        blogCreator: document.getElementById('blog-creator-section'),
+                        githubToken: document.getElementById('github-token-section'),
+                        settings: document.getElementById('settings-section')
+                    },
+                    
+                    // Tabs
+                    tabs: {
+                        blogCreator: document.getElementById('blog-creator-tab'),
+                        githubToken: document.getElementById('github-token-tab'),
+                        settings: document.getElementById('settings-tab')
+                    },
+                    
+                    // Forms
+                    forms: {
+                        blog: document.getElementById('blog-form'),
+                        githubToken: document.getElementById('github-token-form'),
+                        settings: document.getElementById('settings-form')
+                    },
+                    
+                    // Status messages
+                    status: {
+                        post: document.getElementById('post-status'),
+                        token: document.getElementById('token-status'),
+                        settings: document.getElementById('settings-status')
+                    },
+                    
+                    // Mobile elements
+                    mobileMenuBtn: document.getElementById('mobile-menu-btn'),
+                    sidebar: document.getElementById('sidebar'),
+                    overlay: document.getElementById('overlay')
+                };
+            }
+            
+            bindEvents() {
+                // Tab navigation
+                this.elements.tabs.blogCreator.addEventListener('click', (e) => this.showSection('blogCreator', e));
+                this.elements.tabs.githubToken.addEventListener('click', (e) => this.showSection('githubToken', e));
+                this.elements.tabs.settings.addEventListener('click', (e) => this.showSection('settings', e));
+                
+                // Form submissions
+                this.elements.forms.blog.addEventListener('submit', (e) => this.saveBlogPost(e));
+                this.elements.forms.githubToken.addEventListener('submit', (e) => this.saveGitHubToken(e));
+                this.elements.forms.settings.addEventListener('submit', (e) => this.saveSettings(e));
+                
+                // Auto-generate slug from title
+                document.getElementById('blog-title').addEventListener('input', (e) => {
+                    const title = e.target.value;
+                    document.getElementById('blog-slug').value = this.generateSlug(title);
+                    document.getElementById('seo-title').value = title + ' | My Blog';
+                });
+                
+                // Mobile menu
+                this.elements.mobileMenuBtn.addEventListener('click', () => this.toggleMobileMenu());
+                this.elements.overlay.addEventListener('click', () => this.toggleMobileMenu());
+                
+                // Logout
+                document.getElementById('logout-btn').addEventListener('click', () => this.logout());
+            }
+            
+            checkScreenSize() {
+                if (window.innerWidth <= 992) {
+                    this.elements.sidebar.classList.remove('col-md-3', 'col-lg-2');
+                    this.elements.sidebar.classList.add('mobile-sidebar');
+                } else {
+                    this.elements.sidebar.classList.add('col-md-3', 'col-lg-2');
+                    this.elements.sidebar.classList.remove('mobile-sidebar');
+                    this.elements.sidebar.classList.remove('active');
+                    this.elements.overlay.classList.remove('active');
+                }
+            }
+            
+            toggleMobileMenu() {
+                this.elements.sidebar.classList.toggle('active');
+                this.elements.overlay.classList.toggle('active');
+            }
+            
+            showSection(section, e) {
+                if (e) e.preventDefault();
+                
+                // Hide all sections
+                Object.values(this.elements.sections).forEach(sec => {
+                    sec.style.display = 'none';
+                });
+                
+                // Remove active class from all tabs
+                Object.values(this.elements.tabs).forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                
+                // Show selected section and activate tab
+                this.elements.sections[section].style.display = 'block';
+                this.elements.tabs[section].classList.add('active');
+                
+                // Close mobile menu if open
+                if (window.innerWidth <= 992) {
+                    this.toggleMobileMenu();
+                }
+            }
+            
+            loadSettings() {
+                // Load GitHub token settings
+                firebase.database().ref('githubSettings').once('value').then((snapshot) => {
+                    const githubSettings = snapshot.val();
+                    if (githubSettings) {
+                        document.getElementById('github-token-input').value = githubSettings.token || '';
+                        document.getElementById('github-repo').value = githubSettings.repo || '';
+                        document.getElementById('github-path').value = githubSettings.path || '';
+                        document.getElementById('github-branch').value = githubSettings.branch || 'main';
+                    }
+                });
+                
+                // Load blog settings
+                firebase.database().ref('settings').once('value').then((snapshot) => {
+                    const settings = snapshot.val();
+                    if (settings) {
+                        document.getElementById('permalink-base').value = settings.permalinkBase || 'blogs';
+                    }
+                });
+            }
+            
+            saveGitHubToken(e) {
+                e.preventDefault();
+                
+                const token = document.getElementById('github-token-input').value;
+                const repo = document.getElementById('github-repo').value;
+                const path = document.getElementById('github-path').value;
+                const branch = document.getElementById('github-branch').value || 'main';
+                
+                if (!token || !repo) {
+                    this.showStatus('token', 'GitHub token and repository are required', false);
+                    return;
+                }
+                
+                const githubSettings = {
+                    token: token,
+                    repo: repo,
+                    path: path || '',
+                    branch: branch
+                };
+                
+                firebase.database().ref('githubSettings').set(githubSettings)
+                    .then(() => {
+                        this.showStatus('token', 'GitHub settings saved successfully!', true);
+                    })
+                    .catch((error) => {
+                        this.showStatus('token', 'Error saving GitHub settings: ' + error.message, false);
+                    });
+            }
+            
+            saveSettings(e) {
+                e.preventDefault();
+                
+                const permalinkBase = document.getElementById('permalink-base').value;
+                
+                firebase.database().ref('settings').set({
+                    permalinkBase: permalinkBase
+                })
+                .then(() => {
+                    this.showStatus('settings', 'Settings saved successfully!', true);
+                })
+                .catch((error) => {
+                    this.showStatus('settings', 'Error saving settings: ' + error.message, false);
+                });
+            }
+            
+            async saveBlogPost(e) {
+                e.preventDefault();
+                
+                try {
+                    // Get GitHub settings
+                    const githubSnapshot = await firebase.database().ref('githubSettings').once('value');
+                    const githubSettings = githubSnapshot.val();
+                    
+                    if (!githubSettings || !githubSettings.token || !githubSettings.repo) {
+                        this.showStatus('post', 'Please configure GitHub settings first', false);
+                        return;
+                    }
+                    
+                    // Get blog settings
+                    const settingsSnapshot = await firebase.database().ref('settings').once('value');
+                    const settings = settingsSnapshot.val() || {};
+                    
+                    // Prepare blog post data
+                    const title = document.getElementById('blog-title').value;
+                    const slug = document.getElementById('blog-slug').value || this.generateSlug(title);
+                    const category = document.getElementById('blog-category').value;
+                    const featuredImage = document.getElementById('featured-image').value;
+                    const tags = document.getElementById('blog-tags').value.split(',').map(tag => tag.trim());
+                    const seoTitle = document.getElementById('seo-title').value || `${title} | My Blog`;
+                    const seoDescription = document.getElementById('seo-description').value;
+                    
+                    const date = new Date();
+                    const formattedDate = date.toISOString().split('T')[0];
+                    const permalinkBase = settings.permalinkBase || 'blogs';
+                    const permalink = `${permalinkBase}/${slug}`;
+                    
+                    // Prepare HTML content with front matter in comments
+                    const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- 
+        BLOG-FRONT-MATTER:
+        title: ${title}
+        date: ${formattedDate}
+        permalink: ${permalink}
+        category: ${category}
+        tags: ${tags.join(', ')}
+        seoTitle: ${seoTitle}
+        seoDescription: ${seoDescription}
+        featuredImage: ${featuredImage || ''}
+    -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${seoTitle}</title>
+    <meta name="description" content="${seoDescription || ''}">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            line-height: 1.6; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px;
+            color: #333;
+        }
+        .blog-header {
+            margin-bottom: 30px;
+        }
+        .blog-title {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .blog-meta {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+        }
+        .blog-content {
+            margin-top: 20px;
+        }
+        .blog-image {
+            max-width: 100%;
+            height: auto;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <article class="blog-post">
+        <header class="blog-header">
+            <h1 class="blog-title">${title}</h1>
+            <div class="blog-meta">
+                <span>Published: ${formattedDate}</span>
+                ${category ? `<span> | Category: ${category}</span>` : ''}
+                ${tags.length ? `<span> | Tags: ${tags.join(', ')}</span>` : ''}
+            </div>
+            ${featuredImage ? `<img src="${featuredImage}" alt="${title}" class="blog-image">` : ''}
+        </header>
+        
+        <div class="blog-content">
+            ${quill.root.innerHTML}
+        </div>
+    </article>
+</body>
+</html>`;
+                    
+                    // Prepare the filename and path
+                    const filename = `${slug}.html`;
+                    const filePath = githubSettings.path ? 
+                        `${githubSettings.path}${filename}` : filename;
+                    
+                    // Create the blog post in GitHub
+                    await this.createGitHubFile(
+                        githubSettings.token,
+                        githubSettings.repo,
+                        filePath,
+                        htmlContent,
+                        githubSettings.branch,
+                        `Publish blog post: ${title}`
+                    );
+                    
+                    this.showStatus('post', `Blog post "${title}" published successfully to GitHub!`, true);
+                    
+                    // Clear the form
+                    this.elements.forms.blog.reset();
+                    quill.setContents([{ insert: '\n' }]);
+                    
+                } catch (error) {
+                    this.showStatus('post', 'Error publishing post: ' + error.message, false);
+                    console.error('Error:', error);
+                }
+            }
+            
+            async createGitHubFile(token, repo, path, content, branch, message) {
+                const [owner, repoName] = repo.split('/');
+                const apiUrl = `https://api.github.com/repos/${owner}/${repoName}/contents/${path}`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        content: btoa(unescape(encodeURIComponent(content))),
+                        branch: branch
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to create file in GitHub');
+                }
+                
+                return await response.json();
+            }
+            
+            showStatus(type, message, isSuccess) {
+                const element = this.elements.status[type];
+                element.textContent = message;
+                element.className = 'status-message ' + (isSuccess ? 'status-success' : 'status-error');
+                
+                // Hide the message after 5 seconds
+                setTimeout(() => {
+                    element.className = 'status-message';
+                }, 5000);
+            }
+            
+            generateSlug(text) {
+                return text.toLowerCase()
+                    .replace(/[^\w\s-]/g, '') // Remove non-word chars
+                    .replace(/[\s_-]+/g, '-')  // Replace spaces/underscores with dashes
+                    .replace(/^-+|-+$/g, '');  // Trim dashes from start/end
+            }
+            
+            logout() {
+                firebase.auth().signOut()
+                    .then(() => {
+                        window.location.href = "login";
+                    });
+            }
+        }
+        
+        // Initialize the blog admin panel when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new BlogAdminPanel();
+        });
+    </script>
+</body>
+</html>

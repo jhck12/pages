@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Post Creator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+        }
+        
+        .admin-nav {
+            background: #2c3e50;
+            min-height: 100vh;
+            padding: 20px 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .admin-nav .nav-item {
+            margin-bottom: 5px;
+        }
+        
+        .admin-nav .nav-link {
+            color: #ecf0f1;
+            padding: 12px 20px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+        
+        .admin-nav .nav-link:hover {
+            background: #34495e;
+            color: white;
+            transform: translateX(3px);
+        }
+        
+        .admin-nav .nav-link.active {
+            background: #3498db;
+            color: white;
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2);
+        }
+        
+        .admin-nav .nav-link i {
+            width: 24px;
+            text-align: center;
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .admin-nav #logout-btn {
+            margin-top: 30px;
+            padding: 10px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .main-content {
+            padding: 30px;
+            background-color: #f5f7fa;
+        }
+        
+        .main-content h2 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eaecef;
+            font-weight: 600;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .form-section {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        #blog-editor {
+            height: 400px;
+            margin-bottom: 20px;
+            background: white;
+            border-radius: 4px;
+        }
+        
+        .status-message {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .admin-nav {
+                position: fixed;
+                width: 250px;
+                left: -250px;
+                z-index: 1000;
+            }
+            
+            .admin-nav.active {
+                left: 0;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .mobile-menu-btn {
+                display: block !important;
+            }
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            left: 10px;
+            top: 10px;
+            z-index: 1100;
+            background: #343a40;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+        }
+        
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        
+        .overlay.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <button id="mobile-menu-btn" class="mobile-menu-btn">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <div id="overlay" class="overlay"></div>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 admin-nav" id="sidebar">
+                <div class="d-flex flex-column h-100">
+                    <div class="text-center mb-4">
+                        <h4 class="text-white mb-0 py-3">Blog Admin</h4>
+                    </div>
+                    
+                    <ul class="nav flex-column flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#">
+                                <i class="fas fa-newspaper"></i> Blog Creator
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="blog-manager.html">
+                                <i class="fas fa-list"></i> Manage Posts
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="github-settings.html">
+                                <i class="fas fa-key"></i> GitHub Token
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <div class="mt-auto px-3 pb-4">
+                        <button id="logout-btn" class="btn btn-danger w-100">
+                            <i class="fas fa-sign-out-alt me-2"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-9 col-lg-10 py-4 main-content" id="main-content">
+                <div id="blog-creator-section">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="mb-0">Create New Blog Post</h2>
+                    </div>
+                    
+                    <div id="post-status" class="status-message"></div>
+                    
+                    <div class="form-section">
+                        <form id="blog-form">
+                            <div class="mb-4">
+                                <label for="blog-title" class="form-label">Title</label>
+                                <input type="text" class="form-control" id="blog-title" required>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <label for="blog-slug" class="form-label">URL Slug</label>
+                                    <input type="text" class="form-control" id="blog-slug" required>
+                                    <small class="text-muted">Will be used in the post URL (e.g. "my-first-post")</small>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <label for="blog-category" class="form-label">Category</label>
+                                    <select class="form-select" id="blog-category">
+                                        <option value="general">General</option>
+                                        <option value="tutorials">Tutorials</option>
+                                        <option value="updates">Updates</option>
+                                        <option value="announcements">Announcements</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="featured-image" class="form-label">Featured Image URL</label>
+                                <input type="url" class="form-control" id="featured-image">
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">Content</label>
+                                <div id="blog-editor"></div>
+                            </div>
+                            
+                            <div class="border-top pt-4 mb-4">
+                                <h5 class="mb-3">SEO Settings</h5>
+                                <div class="mb-4">
+                                    <label for="seo-title" class="form-label">SEO Title</label>
+                                    <input type="text" class="form-control" id="seo-title">
+                                </div>
+                                <div class="mb-4">
+                                    <label for="seo-description" class="form-label">SEO Description</label>
+                                    <textarea class="form-control" id="seo-description" rows="3"></textarea>
+                                </div>
+                                <div class="mb-4">
+                                    <label for="blog-tags" class="form-label">Tags (comma separated)</label>
+                                    <input type="text" class="form-control" id="blog-tags">
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-2"></i> Publish to GitHub
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    class BlogPostCreator {
+        constructor() {
+            this.initAuth();
+            this.initElements();
+            this.bindEvents();
+            this.checkScreenSize();
+            window.addEventListener('resize', () => this.checkScreenSize());
+            this.initQuill();
+        }
+        
+        initAuth() {
+            firebase.auth().onAuthStateChanged(user => {
+                if (!user) {
+                    window.location.href = "login";
+                } else {
+                    this.checkAdminStatus(user.uid);
+                }
+            });
+        }
+        
+        checkAdminStatus(uid) {
+            firebase.database().ref('admins/' + uid).once('value')
+                .then((snapshot) => {
+                    if (!snapshot.exists() || !snapshot.val().isRoot) {
+                        alert("You don't have admin access");
+                        window.location.href = "login";
+                    }
+                });
+        }
+        
+        initElements() {
+            this.elements = {
+                forms: {
+                    blog: document.getElementById('blog-form')
+                },
+                status: {
+                    post: document.getElementById('post-status')
+                },
+                mobileMenuBtn: document.getElementById('mobile-menu-btn'),
+                sidebar: document.getElementById('sidebar'),
+                overlay: document.getElementById('overlay')
+            };
+        }
+        
+        initQuill() {
+            this.quill = new Quill('#blog-editor', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        ['link', 'image'],
+                        ['clean']
+                    ]
+                },
+                placeholder: 'Write your blog post content here...'
+            });
+        }
+        
+        bindEvents() {
+            this.elements.forms.blog.addEventListener('submit', (e) => this.saveBlogPost(e));
+            this.elements.mobileMenuBtn.addEventListener('click', () => this.toggleMobileMenu());
+            this.elements.overlay.addEventListener('click', () => this.toggleMobileMenu());
+            document.getElementById('logout-btn').addEventListener('click', () => this.logout());
+            
+            document.getElementById('blog-title').addEventListener('input', (e) => {
+                const title = e.target.value;
+                document.getElementById('blog-slug').value = this.generateSlug(title);
+                document.getElementById('seo-title').value = title + ' | My Blog';
+            });
+        }
+        
+        checkScreenSize() {
+            if (window.innerWidth <= 992) {
+                this.elements.sidebar.classList.remove('col-md-3', 'col-lg-2');
+                this.elements.sidebar.classList.add('mobile-sidebar');
+            } else {
+                this.elements.sidebar.classList.add('col-md-3', 'col-lg-2');
+                this.elements.sidebar.classList.remove('mobile-sidebar');
+                this.elements.sidebar.classList.remove('active');
+                this.elements.overlay.classList.remove('active');
+            }
+        }
+        
+        toggleMobileMenu() {
+            this.elements.sidebar.classList.toggle('active');
+            this.elements.overlay.classList.toggle('active');
+        }
+        
+        async saveBlogPost(e) {
+            e.preventDefault();
+            
+            try {
+                const githubSnapshot = await firebase.database().ref('githubSettings').once('value');
+                const githubSettings = githubSnapshot.val();
+                
+                if (!githubSettings || !githubSettings.token || !githubSettings.repo) {
+                    this.showStatus('post', 'Please configure GitHub settings first', false);
+                    return;
+                }
+                
+                const title = document.getElementById('blog-title').value;
+                const slug = document.getElementById('blog-slug').value || this.generateSlug(title);
+                const category = document.getElementById('blog-category').value;
+                const featuredImage = document.getElementById('featured-image').value;
+                const tags = document.getElementById('blog-tags').value.split(',').map(tag => tag.trim());
+                const seoTitle = document.getElementById('seo-title').value || `${title} | My Blog`;
+                const seoDescription = document.getElementById('seo-description').value;
+                
+                const date = new Date();
+                const formattedDate = date.toISOString().split('T')[0];
+                const permalink = `blogs/${slug}`;
+                
+                // Prepare blog post metadata for Firebase
+                const postId = this.generatePostId();
+                const postMetadata = {
+                    id: postId,
+                    title: title,
+                    slug: slug,
+                    category: category,
+                    featuredImage: featuredImage || '',
+                    tags: tags,
+                    seoTitle: seoTitle,
+                    seoDescription: seoDescription || '',
+                    date: formattedDate,
+                    permalink: permalink,
+                    createdAt: firebase.database.ServerValue.TIMESTAMP,
+                    updatedAt: firebase.database.ServerValue.TIMESTAMP
+                };
+                
+                // Save metadata to Firebase
+                await firebase.database().ref(`blogPosts/${postId}`).set(postMetadata);
+                
+                // Prepare HTML content
+                const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- BLOG-FRONT-MATTER: ${JSON.stringify(postMetadata)} -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${seoTitle}</title>
+    <meta name="description" content="${seoDescription || ''}">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            line-height: 1.6; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px;
+            color: #333;
+        }
+        .blog-header {
+            margin-bottom: 30px;
+        }
+        .blog-title {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .blog-meta {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+        }
+        .blog-content {
+            margin-top: 20px;
+        }
+        .blog-image {
+            max-width: 100%;
+            height: auto;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <article class="blog-post">
+        <header class="blog-header">
+            <h1 class="blog-title">${title}</h1>
+            <div class="blog-meta">
+                <span>Published: ${formattedDate}</span>
+                ${category ? `<span> | Category: ${category}</span>` : ''}
+                ${tags.length ? `<span> | Tags: ${tags.join(', ')}</span>` : ''}
+            </div>
+            ${featuredImage ? `<img src="${featuredImage}" alt="${title}" class="blog-image">` : ''}
+        </header>
+        
+        <div class="blog-content">
+            ${this.quill.root.innerHTML}
+        </div>
+    </article>
+</body>
+</html>`;
+                
+                const filename = `${slug}.html`;
+                const filePath = githubSettings.path ? 
+                    `${githubSettings.path}${filename}` : filename;
+                
+                await this.createGitHubFile(
+                    githubSettings.token,
+                    githubSettings.repo,
+                    filePath,
+                    htmlContent,
+                    githubSettings.branch,
+                    `Publish blog post: ${title}`
+                );
+                
+                this.showStatus('post', `Blog post "${title}" published successfully!`, true);
+                
+                this.elements.forms.blog.reset();
+                this.quill.setContents([{ insert: '\n' }]);
+                
+            } catch (error) {
+                this.showStatus('post', 'Error publishing post: ' + error.message, false);
+                console.error('Error:', error);
+            }
+        }
+        
+        async createGitHubFile(token, repo, path, content, branch, message) {
+            const [owner, repoName] = repo.split('/');
+            const apiUrl = `https://api.github.com/repos/${owner}/${repoName}/contents/${path}`;
+            
+            try {
+                // First, try to get the file to check if it exists
+                const getResponse = await fetch(apiUrl, {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                let sha = null;
+                if (getResponse.ok) {
+                    const fileData = await getResponse.json();
+                    sha = fileData.sha; // Get the SHA of the existing file
+                } else if (getResponse.status !== 404) {
+                    // If it's not a 404 error, throw the error
+                    const errorData = await getResponse.json();
+                    throw new Error(errorData.message || 'Failed to check file existence');
+                }
+
+                // Prepare the request body
+                const body = {
+                    message: message,
+                    content: btoa(unescape(encodeURIComponent(content))),
+                    branch: branch
+                };
+
+                // Only add SHA if we're updating an existing file
+                if (sha) {
+                    body.sha = sha;
+                }
+
+                const response = await fetch(apiUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to create/update file in GitHub');
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('GitHub API Error:', error);
+                throw error;
+            }
+        }
+        
+        generatePostId() {
+            return 'post_' + Date.now();
+        }
+        
+        showStatus(type, message, isSuccess) {
+            const element = this.elements.status[type];
+            element.textContent = message;
+            element.className = 'status-message ' + (isSuccess ? 'status-success' : 'status-error');
+            
+            setTimeout(() => {
+                element.className = 'status-message';
+            }, 5000);
+        }
+        
+        generateSlug(text) {
+            return text.toLowerCase()
+                .replace(/[^\w\s-]/g, '')
+                .replace(/[\s_-]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+        }
+        
+        logout() {
+            firebase.auth().signOut()
+                .then(() => {
+                    window.location.href = "login";
+                });
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        new BlogPostCreator();
+    });
+</script>
+</body>
+</html>

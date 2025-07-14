@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Settings</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="globalstyles.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+        }
+        
+        .admin-nav {
+            background: #2c3e50;
+            min-height: 100vh;
+            padding: 20px 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .admin-nav .nav-item {
+            margin-bottom: 5px;
+        }
+        
+        .admin-nav .nav-link {
+            color: #ecf0f1;
+            padding: 12px 20px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+        
+        .admin-nav .nav-link:hover {
+            background: #34495e;
+            color: white;
+            transform: translateX(3px);
+        }
+        
+        .admin-nav .nav-link.active {
+            background: #3498db;
+            color: white;
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2);
+        }
+        
+        .admin-nav .nav-link i {
+            width: 24px;
+            text-align: center;
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .admin-nav #logout-btn {
+            margin-top: 30px;
+            padding: 10px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .main-content {
+            padding: 30px;
+            background-color: #f5f7fa;
+        }
+        
+        .main-content h2 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eaecef;
+            font-weight: 600;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .form-section {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .status-message {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .admin-nav {
+                position: fixed;
+                width: 250px;
+                left: -250px;
+                z-index: 1000;
+            }
+            
+            .admin-nav.active {
+                left: 0;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .mobile-menu-btn {
+                display: block !important;
+            }
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            left: 10px;
+            top: 10px;
+            z-index: 1100;
+            background: #343a40;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+        }
+        
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        
+        .overlay.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <button id="mobile-menu-btn" class="mobile-menu-btn">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <div id="overlay" class="overlay"></div>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 admin-nav" id="sidebar">
+                <div class="d-flex flex-column h-100">
+                    <div class="text-center mb-4">
+                        <h4 class="text-white mb-0 py-3">Blog Admin</h4>
+                    </div>
+                    
+                    <ul class="nav flex-column flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link" href="blogpostcreator.html">
+                                <i class="fas fa-newspaper"></i> Blog Creator
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#">
+                                <i class="fas fa-key"></i> GitHub Token
+                            </a>
+                        </li>
+
+                    </ul>
+                    
+                    <div class="mt-auto px-3 pb-4">
+                        <button id="logout-btn" class="btn btn-danger w-100">
+                            <i class="fas fa-sign-out-alt me-2"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-9 col-lg-10 py-4 main-content" id="main-content">
+                <div id="github-token-section" class="form-section">
+                    <h2 class="mb-4">GitHub Token Settings</h2>
+                    <div id="token-status" class="status-message"></div>
+                    
+                    <form id="github-token-form">
+                        <div class="mb-4">
+                            <label for="github-token-input" class="form-label">GitHub Personal Access Token</label>
+                            <input type="password" class="form-control" id="github-token-input" required>
+                            <small class="text-muted">Create a token with repo permissions in GitHub Settings</small>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="github-repo" class="form-label">Repository</label>
+                            <input type="text" class="form-control" id="github-repo" placeholder="username/repo" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="github-path" class="form-label">Path in Repository</label>
+                            <input type="text" class="form-control" id="github-path" placeholder="blog/">
+                            <small class="text-muted">Leave empty to save in root</small>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="github-branch" class="form-label">Branch</label>
+                            <input type="text" class="form-control" id="github-branch" value="main" required>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i> Save Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        class GitHubSettings {
+            constructor() {
+                this.initAuth();
+                this.initElements();
+                this.bindEvents();
+                this.checkScreenSize();
+                window.addEventListener('resize', () => this.checkScreenSize());
+            }
+            
+            initAuth() {
+                firebase.auth().onAuthStateChanged(user => {
+                    if (!user) {
+                        window.location.href = "login";
+                    } else {
+                        this.checkAdminStatus(user.uid);
+                    }
+                });
+            }
+            
+            checkAdminStatus(uid) {
+                firebase.database().ref('admins/' + uid).once('value')
+                    .then((snapshot) => {
+                        if (!snapshot.exists() || !snapshot.val().isRoot) {
+                            alert("You don't have admin access");
+                            window.location.href = "login";
+                        } else {
+                            this.loadSettings();
+                        }
+                    });
+            }
+            
+            initElements() {
+                this.elements = {
+                    forms: {
+                        githubToken: document.getElementById('github-token-form')
+                    },
+                    status: {
+                        token: document.getElementById('token-status')
+                    },
+                    mobileMenuBtn: document.getElementById('mobile-menu-btn'),
+                    sidebar: document.getElementById('sidebar'),
+                    overlay: document.getElementById('overlay')
+                };
+            }
+            
+            bindEvents() {
+                this.elements.forms.githubToken.addEventListener('submit', (e) => this.saveGitHubToken(e));
+                this.elements.mobileMenuBtn.addEventListener('click', () => this.toggleMobileMenu());
+                this.elements.overlay.addEventListener('click', () => this.toggleMobileMenu());
+                document.getElementById('logout-btn').addEventListener('click', () => this.logout());
+            }
+            
+            checkScreenSize() {
+                if (window.innerWidth <= 992) {
+                    this.elements.sidebar.classList.remove('col-md-3', 'col-lg-2');
+                    this.elements.sidebar.classList.add('mobile-sidebar');
+                } else {
+                    this.elements.sidebar.classList.add('col-md-3', 'col-lg-2');
+                    this.elements.sidebar.classList.remove('mobile-sidebar');
+                    this.elements.sidebar.classList.remove('active');
+                    this.elements.overlay.classList.remove('active');
+                }
+            }
+            
+            toggleMobileMenu() {
+                this.elements.sidebar.classList.toggle('active');
+                this.elements.overlay.classList.toggle('active');
+            }
+            
+            loadSettings() {
+                firebase.database().ref('githubSettings').once('value').then((snapshot) => {
+                    const githubSettings = snapshot.val();
+                    if (githubSettings) {
+                        document.getElementById('github-token-input').value = githubSettings.token || '';
+                        document.getElementById('github-repo').value = githubSettings.repo || '';
+                        document.getElementById('github-path').value = githubSettings.path || '';
+                        document.getElementById('github-branch').value = githubSettings.branch || 'main';
+                    }
+                });
+            }
+            
+            saveGitHubToken(e) {
+                e.preventDefault();
+                
+                const token = document.getElementById('github-token-input').value;
+                const repo = document.getElementById('github-repo').value;
+                const path = document.getElementById('github-path').value;
+                const branch = document.getElementById('github-branch').value || 'main';
+                
+                if (!token || !repo) {
+                    this.showStatus('token', 'GitHub token and repository are required', false);
+                    return;
+                }
+                
+                const githubSettings = {
+                    token: token,
+                    repo: repo,
+                    path: path || '',
+                    branch: branch
+                };
+                
+                firebase.database().ref('githubSettings').set(githubSettings)
+                    .then(() => {
+                        this.showStatus('token', 'GitHub settings saved successfully!', true);
+                    })
+                    .catch((error) => {
+                        this.showStatus('token', 'Error saving GitHub settings: ' + error.message, false);
+                    });
+            }
+            
+            showStatus(type, message, isSuccess) {
+                const element = this.elements.status[type];
+                element.textContent = message;
+                element.className = 'status-message ' + (isSuccess ? 'status-success' : 'status-error');
+                
+                setTimeout(() => {
+                    element.className = 'status-message';
+                }, 5000);
+            }
+            
+            logout() {
+                firebase.auth().signOut()
+                    .then(() => {
+                        window.location.href = "login";
+                    });
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            new GitHubSettings();
+        });
+    </script>
+</body>
+</html>
