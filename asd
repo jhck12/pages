@@ -35,14 +35,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>New Page</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-        h1 { color: #4CAF50; }
-    </style>
 </head>
 <body>
     <h1>Welcome to my new page!</h1>
-    <p>Your content goes here</p>
 </body>
 </html>
         </textarea>
@@ -64,11 +59,8 @@
                 const pageContent = document.getElementById('pageContent').value;
                 const commitMessage = document.getElementById('commitMessage').value;
                 
-                // Auto-fix filename if needed
-                let finalFilename = filename;
-                if (!finalFilename.endsWith('.html')) {
-                    finalFilename += '.html';
-                }
+                // Ensure filename ends with .html
+                const finalFilename = filename.endsWith('.html') ? filename : `${filename}.html`;
                 const fullPath = `pages/blogs/${finalFilename}`;
                 
                 const statusEl = document.getElementById('status');
@@ -78,13 +70,17 @@
                 try {
                     // First get the GitHub token from Netlify Function
                     const tokenResponse = await fetch('/.netlify/functions/get-token');
-                    const { token } = await tokenResponse.json();
-                    
-                    if (!token) {
+                    if (!tokenResponse.ok) {
                         throw new Error('Failed to get GitHub token');
                     }
+                    const tokenData = await tokenResponse.json();
+                    const token = tokenData.token;
+                    
+                    if (!token) {
+                        throw new Error('GitHub token not found');
+                    }
 
-                    // Now commit to GitHub using the token from environment variables
+                    // Commit to GitHub
                     const githubResponse = await fetch(`https://api.github.com/repos/jhck12/pages/contents/${fullPath}`, {
                         method: 'PUT',
                         headers: {
@@ -99,20 +95,23 @@
                         })
                     });
 
+                    const githubResult = await githubResponse.json();
                     if (!githubResponse.ok) {
-                        throw new Error(`GitHub API error: ${await githubResponse.text()}`);
+                        throw new Error(githubResult.message || 'GitHub API error');
                     }
 
-                    // Trigger Netlify build (using hardcoded values as per your request)
+                    // Trigger Netlify build
                     const netlifyResponse = await fetch('https://api.netlify.com/api/v1/sites/dadc669a-98ef-4631-9b37-ec6bafa5fd56/builds', {
                         method: 'POST',
                         headers: {
-                            'Authorization': 'Bearer nfp_WMtGCmpoNa5cQUi37dirinGS3jXu98gM7cc2'
+                            'Authorization': 'Bearer nfp_WMtGCmpoNa5cQUi37dirinGS3jXu98gM7cc2',
+                            'Content-Type': 'application/json'
                         }
                     });
 
                     if (!netlifyResponse.ok) {
-                        throw new Error(`Netlify API error: ${await netlifyResponse.text()}`);
+                        const netlifyError = await netlifyResponse.json();
+                        throw new Error(netlifyError.message || 'Netlify API error');
                     }
 
                     statusEl.textContent = 'Success! Page updated and deployment triggered.';
